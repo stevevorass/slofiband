@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slo-Fi - Nobody Gets What They Deserve</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .banner {
+            position: relative;
+            width: 100%;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 40px 20px;
+        }
+        
+        .banner-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(30px);
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+        
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 100%);
+        }
+        
+        .album-cover-wrapper {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+        
+        .album-cover-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .album-cover {
+            width: 280px;
+            height: 280px;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            object-fit: cover;
+        }
+        
+        .album-cover:hover {
+            transform: scale(1.02);
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0.9;
+            border: none;
+        }
+        
+        .play-overlay:hover {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .play-overlay svg {
+            width: 30px;
+            height: 30px;
+            margin-left: 4px;
+            fill: #333;
+        }
+        
+        .play-overlay.playing svg.play-icon { display: none; }
+        .play-overlay svg.pause-icon { display: none; margin-left: 0; }
+        .play-overlay.playing svg.pause-icon { display: block; }
+        
+        .social-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .spotify-follow-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1DB954;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .spotify-follow-btn:hover {
+            background: #1ed760;
+            transform: translateY(-2px);
+        }
+        
+        .spotify-follow-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+        
+        .share-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.1);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .share-btn:hover { background: rgba(0,0,0,0.15); }
+        
+        .main-content {
+            flex: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+        
+        .album-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        
+        .artist-name {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .artist-name a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .artist-name a:hover { text-decoration: underline; }
+        
+        .music-links-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .music-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .music-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .music-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+        }
+        
+        .music-link svg { width: 24px; height: 24px; }
+        .music-link.spotify svg { fill: #1DB954; }
+        .music-link.apple svg { fill: #000; }
+        .music-link.itunes svg { fill: #FB5BC5; }
+        .music-link.amazon svg { fill: #FF9900; }
+        .music-link.pandora svg { fill: #005483; }
+        .music-link.deezer svg { fill: #00C7F2; }
+        
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: #e0e0e0;
+            margin: 15px 0;
+        }
+        
+        .buy-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .buy-link:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+        
+        .buy-link svg { width: 20px; height: 20px; fill: white; }
+        
+        .album-description {
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+        
+        .release-date {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+        
+        .release-date.upcoming {
+            color: #1DB954;
+            font-weight: 600;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            width: 50px;
+            height: 50px;
+            background: #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover {
+            transform: translateY(-3px);
+            background: #555;
+        }
+        
+        .social-link svg { width: 24px; height: 24px; fill: white; }
+        
+        .track-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .track-item:hover { background: #f8f8f8; }
+        .track-item.playing { background: #e8f5e9; }
+        
+        .track-number {
+            width: 30px;
+            height: 30px;
+            background: #333;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .track-item.playing .track-number { background: #1DB954; }
+        
+        .track-info { flex: 1; min-width: 0; }
+        .track-name { font-weight: 500; color: #333; }
+        .track-clip { font-size: 0.8rem; color: #999; }
+        .track-artist { font-size: 0.85rem; color: #666; }
+        .track-duration { color: #888; font-size: 0.9rem; flex-shrink: 0; }
+        
+        .progress-container { width: 100%; margin-top: 15px; padding: 0 15px; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #1DB954;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        footer {
+            background: #f0f0f0;
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        footer p { color: #888; font-size: 0.85rem; margin-bottom: 15px; }
+        footer a { color: #666; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        
+        .footer-logos {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .equalizer {
+            display: none;
+            gap: 2px;
+            align-items: flex-end;
+            height: 20px;
+        }
+        
+        .track-item.playing .equalizer { display: flex; }
+        .track-item.playing .track-duration { display: none; }
+        
+        .bar {
+            width: 3px;
+            background: #1DB954;
+            animation: equalizer 0.8s ease-in-out infinite;
+        }
+        
+        .bar:nth-child(1) { animation-delay: 0s; }
+        .bar:nth-child(2) { animation-delay: 0.2s; }
+        .bar:nth-child(3) { animation-delay: 0.4s; }
+        .bar:nth-child(4) { animation-delay: 0.1s; }
+        
+        @keyframes equalizer {
+            0%, 100% { height: 5px; }
+            50% { height: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <audio id="audioPlayer" preload="auto">
+        <source src="clip.mp3" type="audio/mpeg">
+    </audio>
+
+    <header class="banner">
+        <div class="banner-bg" style="background-image: url('album_cover.jpg');"></div>
+        <div class="banner-overlay"></div>
+        
+        <div class="album-cover-wrapper">
+            <div class="album-cover-container">
+                <img src="album_cover.jpg" alt="Nobody Gets What They Deserve - Album Cover" class="album-cover" onclick="togglePlay()">
+                <button class="play-overlay" id="playOverlay" onclick="togglePlay()">
+                    <svg viewBox="0 0 24 24" class="play-icon"><path d="M8 5v14l11-7z"/></svg>
+                    <svg viewBox="0 0 24 24" class="pause-icon"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+                </button>
+            </div>
+            
+            <div class="track-item" id="trackItem" onclick="togglePlay()">
+                <div class="track-number">1</div>
+                <div class="track-info">
+                    <div class="track-name">Nobody Gets What They Deserve <span class="track-clip">(clip)</span></div>
+                    <div class="track-artist">Slo-Fi</div>
+                </div>
+                <div class="track-duration">0:30</div>
+                <div class="equalizer">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar" onclick="seek(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="totalTime">0:30</span>
+                </div>
+            </div>
+            
+            <div class="social-actions">
+                <a href="https://open.spotify.com/artist/3f49YK9ESSLG4BNurl6CrQ?si=DmrzwQx0SRKKs86WxecHYQ" class="spotify-follow-btn">
+                    <svg viewBox="0 0 30 30"><path d="M13.894 1.056c-4.584.4-8.563 2.873-10.909 6.783-1.036 1.725-1.645 3.554-1.909 5.723-.076.62-.064 2.37.024 3.042.416 3.297 1.825 6.147 4.151 8.404a13.92 13.92 0 0 0 8.463 3.902c1.024.092 2.625.032 3.634-.14 5.82-1 10.416-5.595 11.417-11.414.172-1.008.232-2.61.14-3.634-.372-4.026-2.458-7.672-5.764-10.069-1.874-1.36-4.04-2.213-6.405-2.521-.717-.092-2.182-.132-2.842-.076m1.16 7.444c3.395.268 6.193.976 8.587 2.169 1.185.592 1.385.764 1.525 1.32.152.589-.136 1.185-.7 1.461-.193.096-.273.112-.565.112h-.34l-.56-.304c-2.21-1.196-4.7-1.873-7.986-2.165-.777-.068-3.363-.068-4.124 0-1.325.12-2.485.316-3.518.592-.837.228-1.25.172-1.65-.228A1.287 1.287 0 0 1 5.677 9.7c.252-.284.468-.376 1.349-.6 1.385-.352 2.898-.56 4.767-.656.496-.024 2.706.012 3.263.056m-.664 4.802c2.97.252 5.82 1.1 8.05 2.405.484.28.677.48.765.789.16.544-.16 1.156-.693 1.332a1.5 1.5 0 0 1-.404.028c-.248-.012-.312-.04-.889-.36-1.265-.704-2.474-1.168-4.03-1.549-2.92-.716-6.242-.724-8.9-.02-.82.22-.844.225-1.056.197a1.05 1.05 0 0 1-.809-.549c-.1-.18-.116-.256-.116-.512 0-.26.016-.328.124-.52.18-.316.368-.444.88-.593 1.218-.356 2.699-.6 4.164-.688.68-.04 2.202-.02 2.914.04m.344 4.582c2.218.237 4.155.845 5.98 1.873.637.36.805.577.777 1.013-.02.336-.164.552-.472.708-.34.176-.516.144-1.149-.216-3.15-1.78-6.93-2.197-11.484-1.257-.465.097-.689.125-.801.105-.44-.085-.697-.393-.697-.845q.002-.533.44-.76c.385-.196 2.763-.58 4.224-.68.716-.049 2.482-.017 3.182.06"/></svg>
+                    Follow
+                </a>
+                <button class="share-btn" onclick="shareTrack()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    </svg>
+                    Share
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main-content">
+        <div class="left-column">
+            <h1 class="album-title">Nobody Gets What They Deserve</h1>
+            <p class="artist-name">by <a href="#">Slo-Fi</a></p>
+            
+            <p class="music-links-label">Get the music:</p>
+            
+            <div class="music-links">
+                <a href="https://open.spotify.com/artist/3f49YK9ESSLG4BNurl6CrQ" class="music-link spotify">
+                    <svg viewBox="0 0 30 30"><path d="M13.894 1.056c-4.584.4-8.563 2.873-10.909 6.783-1.036 1.725-1.645 3.554-1.909 5.723-.076.62-.064 2.37.024 3.042.416 3.297 1.825 6.147 4.151 8.404a13.92 13.92 0 0 0 8.463 3.902c1.024.092 2.625.032 3.634-.14 5.82-1 10.416-5.595 11.417-11.414.172-1.008.232-2.61.14-3.634-.372-4.026-2.458-7.672-5.764-10.069-1.874-1.36-4.04-2.213-6.405-2.521-.717-.092-2.182-.132-2.842-.076m1.16 7.444c3.395.268 6.193.976 8.587 2.169 1.185.592 1.385.764 1.525 1.32.152.589-.136 1.185-.7 1.461-.193.096-.273.112-.565.112h-.34l-.56-.304c-2.21-1.196-4.7-1.873-7.986-2.165-.777-.068-3.363-.068-4.124 0-1.325.12-2.485.316-3.518.592-.837.228-1.25.172-1.65-.228A1.287 1.287 0 0 1 5.677 9.7c.252-.284.468-.376 1.349-.6 1.385-.352 2.898-.56 4.767-.656.496-.024 2.706.012 3.263.056m-.664 4.802c2.97.252 5.82 1.1 8.05 2.405.484.28.677.48.765.789.16.544-.16 1.156-.693 1.332a1.5 1.5 0 0 1-.404.028c-.248-.012-.312-.04-.889-.36-1.265-.704-2.474-1.168-4.03-1.549-2.92-.716-6.242-.724-8.9-.02-.82.22-.844.225-1.056.197a1.05 1.05 0 0 1-.809-.549c-.1-.18-.116-.256-.116-.512 0-.26.016-.328.124-.52.18-.316.368-.444.88-.593 1.218-.356 2.699-.6 4.164-.688.68-.04 2.202-.02 2.914.04m.344 4.582c2.218.237 4.155.845 5.98 1.873.637.36.805.577.777 1.013-.02.336-.164.552-.472.708-.34.176-.516.144-1.149-.216-3.15-1.78-6.93-2.197-11.484-1.257-.465.097-.689.125-.801.105-.44-.085-.697-.393-.697-.845q.002-.533.44-.76c.385-.196 2.763-.58 4.224-.68.716-.049 2.482-.017 3.182.06"/></svg>
+                    Spotify
+                </a>
+                <a href="https://music.apple.com/us/artist/534851092" class="music-link apple">
+                    <svg viewBox="0 0 512 512"><path d="M395.748 272.046c-.646-64.841 52.88-95.938 55.271-97.483-30.075-44.01-76.925-50.039-93.62-50.736-39.871-4.037-77.798 23.474-98.033 23.474-20.184 0-51.409-22.877-84.476-22.276-43.458.646-83.529 25.269-105.906 64.19-45.152 78.35-11.563 194.42 32.445 257.963 21.504 31.104 47.146 66.038 80.813 64.79 32.421-1.294 44.681-20.979 83.878-20.979 39.196 0 50.215 20.979 84.524 20.335 34.888-.648 56.991-31.699 78.347-62.898 24.694-36.084 34.862-71.019 35.462-72.812-.775-.354-68.031-26.119-68.705-103.568M331.28 81.761C349.149 60.082 361.21 30.005 357.92 0c-25.739 1.048-56.938 17.145-75.405 38.775-16.57 19.188-31.075 49.813-27.188 79.218 28.734 2.242 58.065-14.602 75.953-36.232"/></svg>
+                    Apple Music
+                </a>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <a href="https://slofi.bandcamp.com/track/nobody-gets-what-they-deserve" class="buy-link">
+                <svg viewBox="0 0 22 19"><g fill-rule="evenodd"><path d="M8.736 11.926h9.028l1.53-7H7.234zM4.53 1.97H0V0h6.092l.611 2.627h14.983l-2.432 11.597H7.251z"/><circle cx="10.015" cy="17.357" r="1.642"/><circle cx="16.648" cy="17.357" r="1.642"/></g></svg>
+                Buy from Artist
+            </a>
+        </div>
+        
+        <div class="right-column">
+            <p class="album-description">
+                Stephen Ziel, a founding member of Milwaukee's legendary band Pet Engine, has teamed up with multi-instrumentalist and producer Steve Vorass (Drummer for Newski, I'm Not A Pilot, Mixtape, and more) for a new creative project. Drawing on decades of experience in Milwaukee's music scene, the duo blends power-pop songwriting with indie-rock production.
+            </p>
+            <p class="album-description">
+                Stephen handles the core songwriting, vocals, and guitar, while Steve brings the rhythm and sonic depth—crafting drum parts, writing bass lines, and producing tracks that elevate the songs into their full form. Together, they strike a balance of raw indie style and polished sound, carrying forward the spirit of Milwaukee's amazing local scene. Check out Slo-Fi's single "Nobody Gets What They Deserve".
+            </p>
+            
+            <p class="release-date upcoming">🎵 New Music Coming Soon!</p>
+            
+            <div class="social-links">
+                <!-- <a href="https://www.facebook.com/slofirock" class="social-link" title="Facebook">
+                    <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+                <a href="#" class="social-link" title="YouTube">
+                    <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" class="social-link" title="Instagram">
+                    <svg viewBox="0 0 24 24"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.757-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+                </a> -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const audio = document.getElementById('audioPlayer');
+        const playOverlay = document.getElementById('playOverlay');
+        const trackItem = document.getElementById('trackItem');
+        const progressFill = document.getElementById('progressFill');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        let isPlaying = false;
+        
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function togglePlay() {
+            if (isPlaying) {
+                audio.pause();
+                playOverlay.classList.remove('playing');
+                trackItem.classList.remove('playing');
+                isPlaying = false;
+            } else {
+                audio.play();
+                playOverlay.classList.add('playing');
+                trackItem.classList.add('playing');
+                isPlaying = true;
+            }
+        }
+        
+        audio.addEventListener('timeupdate', function() {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            progressFill.style.width = progress + '%';
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        });
+        
+        audio.addEventListener('loadedmetadata', function() {
+            totalTimeEl.textContent = formatTime(audio.duration);
+        });
+        
+        audio.addEventListener('ended', function() {
+            playOverlay.classList.remove('playing');
+            trackItem.classList.remove('playing');
+            isPlaying = false;
+            progressFill.style.width = '0%';
+            currentTimeEl.textContent = '0:00';
+        });
+        
+        function seek(event) {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        }
+        
+        function shareTrack() {
+            if (navigator.share) {
+                navigator.share({ title: 'Nobody Gets What They Deserve - Slo-Fi', text: 'Check out this track by Slo-Fi!', url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
+            }
+        }
+    </script>
+</body>
+</html>
